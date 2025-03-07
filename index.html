@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE BIG MOVE</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #1a1a1a;
+            padding: 50px;
+            overflow: hidden;
+        }
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .slide {
+            position: absolute;
+            width: 400px;
+            background: #2d2d2d;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.4);
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            display: none;
+        }
+        .slide.active {
+            opacity: 1;
+            display: block;
+        }
+        h1 {
+            font-size: 28px;
+            color: #66ff66;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+            color: #cccccc;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 2px solid #66ff66;
+            border-radius: 8px;
+            background: #3a3a3a;
+            color: white;
+            font-size: 16px;
+        }
+        input[type="radio"] {
+            margin: 10px;
+        }
+        button {
+            background: linear-gradient(145deg, #33cc33, #009900);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 20px;
+            width: 100%;
+            box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+        }
+        button:hover {
+            background: linear-gradient(145deg, #009900, #006600);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="slide active" id="slide1">
+            <h1>THE BIG MOVE</h1>
+            <label for="name">Nimi:</label>
+            <input type="text" id="name" required>
+            <p class="error" id="nameError" style="display:none; color:red;">Nimi ei kelpaa! Käytä "X, Y, Z".</p>
+            <button onclick="nextSlide(1)">Seuraava</button>
+        </div>
+        <div class="slide" id="slide2">
+            <label>Milloin voit auttaa?</label>
+            <input type="radio" name="day" value="Perjantai" required> Perjantai
+            <input type="radio" name="day" value="Lauantai" required> Lauantai
+            <button onclick="nextSlide(2)">Seuraava</button>
+        </div>
+        <div class="slide" id="slide3">
+            <label>Juomavalinta:</label>
+            <input type="radio" name="drink" value="Kotimainen olut" required> Kotimainen olut
+            <input type="radio" name="drink" value="Coop Lager" required> Coop Lager
+            <button onclick="nextSlide(3)">Seuraava</button>
+        </div>
+        <div class="slide" id="slide4">
+            <label>Oletko homo?</label>
+            <input type="radio" name="homo" value="Kyllä" required> Olen
+            <input type="radio" name="homo" value="En ole" id="noHomo"> Ei
+            <p class="error" id="homoError" style="display:none; color:red;">Muisteleppa uusiks...</p>
+            <button onclick="validateForm()">Lähetä</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        function nextSlide(slideNumber) {
+            const slides = document.querySelectorAll('.slide');
+            if (slideNumber === 1) {
+                const nameInput = document.getElementById("name").value.trim();
+                const allowedNames = ["X", "Y", "Z"];
+                if (!allowedNames.includes(nameInput)) {
+                    document.getElementById("nameError").style.display = "block";
+                    return;
+                } else {
+                    document.getElementById("nameError").style.display = "none";
+                }
+            }
+            slides[currentSlide].classList.remove('active');
+            slides[slideNumber].classList.add('active');
+            currentSlide = slideNumber;
+        }
+
+        function validateForm() {
+            const noHomo = document.getElementById("noHomo");
+            const homoError = document.getElementById("homoError");
+            if (noHomo.checked) {
+                homoError.style.display = "block";
+                return;
+            } else {
+                homoError.style.display = "none";
+            }
+            sendData();
+        }
+
+        function sendData() {
+            const data = {
+                name: document.getElementById("name").value,
+                day: document.querySelector('input[name="day"]:checked')?.value || "",
+                drink: document.querySelector('input[name="drink"]:checked')?.value || "",
+                homo: "Niin oot :)"
+            };
+
+            fetch("https://script.google.com/macros/s/AKfycbwIKSQ1EJuohDskP07JLxW_Rwt0A845PfZd_1Vx99-5ALW_sxJ9d1iXFfj1jMyEbAB/exec", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            }).then(response => response.text())
+            .then(text => {
+                alert("Vastauksesi on tallennettu Google Sheetiin!\nPalvelimen vastaus: " + text);
+            })
+            .catch(error => {
+                alert("Virhe lähetyksessä! Tarkista konsoliloki.");
+                console.error("Error:", error);
+            });
+        }
+    </script>
+</body>
+</html>
